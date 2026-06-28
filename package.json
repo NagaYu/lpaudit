@@ -1,0 +1,67 @@
+{
+  "name": "lpaudit",
+  "version": "1.0.0",
+  "description": "Audit advertising landing pages for ad-platform rejection and account-ban risk (Meta / Google / TikTok) using Playwright crawling and LLM policy judgement.",
+  "keywords": [
+    "advertising",
+    "landing-page",
+    "ad-policy",
+    "compliance",
+    "meta-ads",
+    "google-ads",
+    "tiktok-ads",
+    "playwright",
+    "llm",
+    "audit",
+    "cli"
+  ],
+  "license": "MIT",
+  "author": "NagaYu",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NagaYu/lpaudit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NagaYu/lpaudit/issues"
+  },
+  "homepage": "https://github.com/NagaYu/lpaudit#readme",
+  "type": "module",
+  "bin": {
+    "lpaudit": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup && node dist/index.js",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "postinstall": "playwright install chromium",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "colorette": "^2.0.20",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.5",
+    "playwright": "^1.48.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.5"
+  }
+}
