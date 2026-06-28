@@ -5,9 +5,10 @@
  *
  * Takes the structured `CrawlResult` produced by the crawler, builds a strict
  * system prompt encoding the latest Meta / Google / TikTok ad policies plus
- * Japanese consumer law (特定商取引法 / 景品表示法 / 薬機法), dispatches it to
- * the configured LLM provider (OpenAI or Gemini) over axios, and parses the
- * response into a validated `AuditReport`.
+ * Japanese consumer law (Specified Commercial Transactions Act / Act against
+ * Unjustifiable Premiums and Misleading Representations / Pharmaceutical and
+ * Medical Device Act), dispatches it to the configured LLM provider (OpenAI or
+ * Gemini) over axios, and parses the response into a validated `AuditReport`.
  *
  * The model is instructed to return ONLY JSON. We additionally:
  *   - request JSON response mode where the provider supports it,

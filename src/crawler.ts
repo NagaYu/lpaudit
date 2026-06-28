@@ -10,7 +10,7 @@
  *   - Trigger lazy-loaded content by progressively scrolling the page.
  *   - Extract inner text, head metadata + OGP, headings, links, media/form
  *     counts, and the deterministic presence of legally-required elements
- *     (特定商取引法に基づく表記 / privacy policy / etc.).
+ *     (Specified Commercial Transactions Act notice / privacy policy / etc.).
  *   - Optionally capture a full-page screenshot.
  *
  * The module exposes a single `crawl()` function returning a strongly-typed
@@ -62,13 +62,18 @@ interface LegalElementSpec {
 
 /**
  * The canonical list of legal elements LPAudit checks for. This is tuned for
- * Japanese commerce LPs (特定商取引法, 景品表示法) plus the globally-required
- * privacy / contact / company elements that Meta & Google demand.
+ * Japanese commerce LPs (Specified Commercial Transactions Act, Act against
+ * Unjustifiable Premiums and Misleading Representations) plus the globally-
+ * required privacy / contact / company elements that Meta & Google demand.
+ *
+ * Note: the `needles` arrays below intentionally contain Japanese strings.
+ * They are the literal tokens matched against Japanese landing pages, so they
+ * are functional data — not documentation — and must remain in Japanese.
  */
 const LEGAL_ELEMENT_SPECS: ReadonlyArray<LegalElementSpec> = [
   {
     key: "tokushoho",
-    label: "特定商取引法に基づく表記 (Specified Commercial Transactions Act notice)",
+    label: "Specified Commercial Transactions Act notice (特定商取引法に基づく表記)",
     severity: "critical",
     needles: ["特定商取引法", "特定商取引", "特商法", "tokutei shoutorihiki", "commercial transactions act"],
   },
@@ -80,7 +85,7 @@ const LEGAL_ELEMENT_SPECS: ReadonlyArray<LegalElementSpec> = [
   },
   {
     key: "terms",
-    label: "Terms of Service / 利用規約",
+    label: "Terms of Service (利用規約)",
     severity: "high",
     needles: ["利用規約", "ご利用規約", "terms of service", "terms of use", "terms and conditions"],
   },
