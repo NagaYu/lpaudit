@@ -4,7 +4,7 @@
 
 ### Stop getting your ad accounts banned. Audit your landing pages *before* the platforms do.
 
-**LPAudit** crawls any advertising landing page with a real headless browser, then runs the extracted copy and structure through an LLM guided by a detailed policy prompt covering the *common* rejection patterns of **Meta**, **Google**, and **TikTok** — plus Japanese consumer law (特定商取引法 / 景品表示法 / 薬機法). It returns a single **1–100 ban-risk estimate**, the **flagged sentences**, and **suggested fixes**.
+**LPAudit** crawls any advertising landing page with a real headless browser, then runs the extracted copy and structure through an LLM guided by a detailed policy prompt covering the *common* rejection patterns of **Meta**, **Google**, and **TikTok** — plus consumer-protection and e-commerce disclosure rules. It returns a single **1–100 ban-risk estimate**, the **flagged sentences**, and **suggested fixes**.
 
 > ℹ️ LPAudit is a heuristic *early-warning* tool. The risk score is an LLM-generated estimate based on a policy prompt — not an official ruling from any ad platform, and not legal advice. Always confirm against the current official policy centers. See the [disclaimer](#-disclaimer).
 
@@ -29,13 +29,13 @@ The most common landing-page reasons accounts get nuked:
 
 | Category | Real-world trigger examples |
 | --- | --- |
-| **Exaggerated / absolute claims** | "No.1", "100% guaranteed", "必ず痩せる", "月収100万円保証" |
-| **Misleading design** | Fake countdowns, fake system warnings, hidden subscription terms (定期購入の不明瞭な表示) |
-| **Restricted verticals** | Health/supplement disease claims (薬機法), crypto / 暗号資産, "get rich quick", MLM |
-| **Missing legal elements** | No 特定商取引法に基づく表記, no Privacy Policy, no operator/company info |
-| **Deceptive offers** | 優良誤認 / 有利誤認 under 景品表示法, undisclosed #PR/advertising |
+| **Exaggerated / absolute claims** | "No.1", "100% guaranteed", "guaranteed weight loss", "$10K/month guaranteed" |
+| **Misleading design** | Fake countdowns, fake system warnings, hidden subscription terms (unclear auto-renewal disclosure) |
+| **Restricted verticals** | Health/supplement disease claims, crypto, "get rich quick", MLM |
+| **Missing legal elements** | No legal/business disclosure, no Privacy Policy, no operator/company info |
+| **Deceptive offers** | Overstating quality or terms/price, undisclosed #ad / sponsored content |
 
-You usually find out **after** the ban. LPAudit tells you **before** you spend a yen.
+You usually find out **after** the ban. LPAudit tells you **before** you spend a cent.
 
 ---
 
@@ -48,22 +48,22 @@ You usually find out **after** the ban. LPAudit tells you **before** you spend a
 
 Target URL   : https://example.com/lp
 HTTP status  : 200
-Page title   : たった30日で-15kg！誰でも必ず痩せる魔法のサプリ
+Page title   : Lose 15 lbs in 30 days — the magic supplement anyone can use!
 
   OVERALL RISK    87/100    SEVERE
   ████████████████████████████████████░░░░
 
 Summary
   This page makes guaranteed weight-loss and disease-related claims that
-  violate 薬機法 and Meta/Google health policies, uses absolute language,
-  and is missing a 特定商取引法 notice. Very high disapproval/ban risk.
+  violate Meta/Google health policies, uses absolute language, and is
+  missing a legal/business disclosure. Very high disapproval/ban risk.
 
 Policy Violations (4)
 
   #01 ■ CRITICAL · restricted_health  Meta  Google  Legal
-      quote : “誰でも必ず痩せる” “30日で-15kgを保証”
-      why   : Guaranteed medical/weight-loss outcomes are prohibited and
-              violate 薬機法 efficacy rules.
+      quote : "anyone will lose weight" "15 lbs in 30 days guaranteed"
+      why   : Guaranteed medical/weight-loss outcomes are prohibited by
+              healthcare advertising policy.
       fix   : Replace with non-guaranteed, individual-results language and
               remove disease/efficacy claims.
   ...
@@ -124,7 +124,7 @@ sequenceDiagram
     Crawler->>LP: goto(url) + waitForLoadState("networkidle")
     Crawler->>LP: auto-scroll (trigger lazy-load)
     LP-->>Crawler: rendered DOM
-    Crawler->>Crawler: extract innerText, metadata/OGP,<br/>headings, links, 特商法/privacy checks
+    Crawler->>Crawler: extract innerText, metadata/OGP,<br/>headings, links, legal-disclosure/privacy checks
     Crawler-->>CLI: CrawlResult (structured JSON)
     CLI->>Judge: judge(crawlResult, config)
     Judge->>LLM: system policy prompt + page data<br/>(response_format: json_object)
@@ -135,10 +135,10 @@ sequenceDiagram
 ```
 
 **Stage 1 — Crawl (`src/crawler.ts`)**
-Launches a hardened Chromium context, navigates with `domcontentloaded` → `networkidle`, **auto-scrolls** to trigger lazy-loaded sections, then extracts inner text, `<head>` metadata + Open Graph, headings, deduplicated links (footer-flagged), and runs **deterministic checks** for required legal elements (特定商取引法, Privacy Policy, 会社概要, etc.).
+Launches a hardened Chromium context, navigates with `domcontentloaded` → `networkidle`, **auto-scrolls** to trigger lazy-loaded sections, then extracts inner text, `<head>` metadata + Open Graph, headings, deduplicated links (footer-flagged), and runs **deterministic checks** for required legal elements (legal/business disclosure, Privacy Policy, company info, etc.).
 
 **Stage 2 — Judge (`src/judge.ts`)**
-Sends the structured page data to your chosen LLM with a system prompt encoding **common Meta / Google / TikTok policy patterns** and **Japanese consumer-law requirements**. The model is forced into **JSON mode**; the response is defensively parsed, validated, and coerced into a strict `AuditReport`. Because the judgement comes from an LLM following a prompt, treat the output as a prioritized review checklist rather than a definitive verdict.
+Sends the structured page data to your chosen LLM with a system prompt encoding **common Meta / Google / TikTok policy patterns** and **consumer-protection requirements** (FTC, GDPR/ePrivacy, ASA/CAP). The model is forced into **JSON mode**; the response is defensively parsed, validated, and coerced into a strict `AuditReport`. Because the judgement comes from an LLM following a prompt, treat the output as a prioritized review checklist rather than a definitive verdict.
 
 ---
 
@@ -200,7 +200,7 @@ Options:
     "finalUrl": "https://example.com/lp",
     "statusCode": 200,
     "metadata": { "title": "...", "openGraph": { "...": "..." } },
-    "legalElements": [{ "key": "tokushoho", "present": false, "severity": "critical" }]
+    "legalElements": [{ "key": "privacyPolicy", "present": false, "severity": "critical" }]
   },
   "report": {
     "riskScore": 87,
@@ -211,7 +211,7 @@ Options:
         "category": "restricted_health",
         "platform": ["meta", "google", "legal"],
         "severity": "critical",
-        "quote": "誰でも必ず痩せる",
+        "quote": "anyone will lose weight",
         "explanation": "…",
         "suggestion": "…"
       }
@@ -264,7 +264,7 @@ runs type-check, tests, and build on Node 18, 20, and 22.
 
 ## ⚠️ Disclaimer
 
-LPAudit is an **assistive QA tool**, not legal advice and not an official ruling from any ad platform. Policies change frequently and enforcement is discretionary. Always confirm against the latest official policy centers (Meta, Google Ads, TikTok) and consult qualified counsel for legal compliance (特商法 / 景表法 / 薬機法).
+LPAudit is an **assistive QA tool**, not legal advice and not an official ruling from any ad platform. Policies change frequently and enforcement is discretionary. Always confirm against the latest official policy centers (Meta, Google Ads, TikTok) and consult qualified counsel for legal compliance in your target markets.
 
 ---
 

@@ -10,7 +10,7 @@
  *   - Trigger lazy-loaded content by progressively scrolling the page.
  *   - Extract inner text, head metadata + OGP, headings, links, media/form
  *     counts, and the deterministic presence of legally-required elements
- *     (Specified Commercial Transactions Act notice / privacy policy / etc.).
+ *     (legal disclosure / privacy policy / etc.).
  *   - Optionally capture a full-page screenshot.
  *
  * The module exposes a single `crawl()` function returning a strongly-typed
@@ -48,9 +48,7 @@ export interface CrawlerOptions {
 
 /**
  * Definition of a single legal/compliance element to look for. We match either
- * by anchor/link text, by raw body text, or both. Matching is accent- and
- * case-insensitive and tolerant of full-width/half-width variants common in
- * Japanese pages.
+ * by anchor/link text, by raw body text, or both, case-insensitively.
  */
 interface LegalElementSpec {
   readonly key: string;
@@ -61,51 +59,49 @@ interface LegalElementSpec {
 }
 
 /**
- * The canonical list of legal elements LPAudit checks for. This is tuned for
- * Japanese commerce LPs (Specified Commercial Transactions Act, Act against
- * Unjustifiable Premiums and Misleading Representations) plus the globally-
- * required privacy / contact / company elements that Meta & Google demand.
- *
- * Note: the `needles` arrays below intentionally contain Japanese strings.
- * They are the literal tokens matched against Japanese landing pages, so they
- * are functional data — not documentation — and must remain in Japanese.
+ * The canonical list of legal / trust elements LPAudit checks for. These are
+ * the disclosures Meta & Google expect a commercial landing page to carry: a
+ * legal/business disclosure, a privacy policy, terms, identifiable operator or
+ * company information, a working contact method, and clear refund/cancellation
+ * terms. Each `needles` entry is a lower-cased substring; ANY match satisfies
+ * the check.
  */
 const LEGAL_ELEMENT_SPECS: ReadonlyArray<LegalElementSpec> = [
   {
-    key: "tokushoho",
-    label: "Specified Commercial Transactions Act notice (特定商取引法に基づく表記)",
+    key: "legalDisclosure",
+    label: "Legal / Business Disclosure",
     severity: "critical",
-    needles: ["特定商取引法", "特定商取引", "特商法", "tokutei shoutorihiki", "commercial transactions act"],
+    needles: ["legal notice", "legal disclosure", "business disclosure", "commercial disclosure", "company registration"],
   },
   {
     key: "privacyPolicy",
     label: "Privacy Policy",
     severity: "critical",
-    needles: ["プライバシーポリシー", "個人情報保護方針", "個人情報の取り扱い", "privacy policy", "privacy"],
+    needles: ["privacy policy", "privacy notice", "data protection", "privacy"],
   },
   {
     key: "terms",
-    label: "Terms of Service (利用規約)",
+    label: "Terms of Service",
     severity: "high",
-    needles: ["利用規約", "ご利用規約", "terms of service", "terms of use", "terms and conditions"],
+    needles: ["terms of service", "terms of use", "terms and conditions", "terms"],
   },
   {
     key: "companyInfo",
-    label: "Company / Operator Information (運営会社・会社概要)",
+    label: "Company / Operator Information",
     severity: "high",
-    needles: ["会社概要", "運営会社", "運営者情報", "会社情報", "company information", "about us", "about company"],
+    needles: ["company information", "about us", "about company", "our company", "who we are"],
   },
   {
     key: "contact",
-    label: "Contact Information (お問い合わせ)",
+    label: "Contact Information",
     severity: "medium",
-    needles: ["お問い合わせ", "お問合せ", "問い合わせ", "contact us", "contact", "support"],
+    needles: ["contact us", "contact", "support", "get in touch"],
   },
   {
     key: "refundPolicy",
-    label: "Refund / Cancellation Policy (返品・キャンセルポリシー)",
+    label: "Refund / Cancellation Policy",
     severity: "medium",
-    needles: ["返品", "返金", "キャンセルポリシー", "返品ポリシー", "refund policy", "return policy", "cancellation"],
+    needles: ["refund policy", "return policy", "cancellation policy", "refund", "returns", "cancellation"],
   },
 ];
 
@@ -123,7 +119,7 @@ function makeLogger(verbose: boolean): (msg: string) => void {
 
 /**
  * Normalize text for substring matching: lower-case, collapse whitespace, and
- * strip a few zero-width characters that occasionally appear in CJK markup.
+ * strip a few zero-width characters that occasionally appear in markup.
  */
 function normalizeForMatch(input: string): string {
   return input
@@ -351,7 +347,7 @@ export async function crawl(options: CrawlerOptions): Promise<CrawlResult> {
       userAgent:
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
         "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-      locale: "ja-JP",
+      locale: "en-US",
       viewport: { width: 1366, height: 900 },
       deviceScaleFactor: 1,
       ignoreHTTPSErrors: true,

@@ -81,7 +81,7 @@ describe("normalizeReport", () => {
           category: "restricted_health",
           platform: ["meta", "google", "legal"],
           severity: "critical",
-          quote: "必ず痩せる",
+          quote: "guaranteed to lose weight",
           explanation: "why",
           suggestion: "fix",
         },
